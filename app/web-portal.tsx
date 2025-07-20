@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Platform, Text, View } from 'react-native';
 import { WebView } from 'react-native-webview';
+import Constants from 'expo-constants';
 
 export default function WebPortalScreen() {
     const [uri, setUri] = useState<string | null>(null);
@@ -17,7 +18,18 @@ export default function WebPortalScreen() {
             const encodedEmail = encodeURIComponent(email);
             const encodedPassword = encodeURIComponent(password);
 
-            setUri(`http://192.168.15.141:5173/login?email=${encodedEmail}&password=${encodedPassword}&fromMobile=true`);
+            const getWebDashboardUrl = () => {
+                const debuggerHost = Constants.manifest?.debuggerHost;
+                if (debuggerHost) {
+                    const ip = debuggerHost.split(':')[0];
+                    return `http://${ip}:5173`;
+                }
+
+                return process.env.EXPO_PUBLIC_WEB_DASHBOARD_URL || 'http://localhost:5173';
+            };
+
+            const uri = `${getWebDashboardUrl()}/login?email=${encodedEmail}&password=${encodedPassword}&fromMobile=true`;
+            setUri(uri);
         };
 
         loadCredentials();
